@@ -3,7 +3,7 @@
 -- 前置: 先执行 create_schema.sql
 -- 说明:
 --   1. 所有员工头像统一使用工作区下的 photo.jpg(已放到 uploads/avatar/photo.jpg),
---      访问路径为 /api/uploads/avatar/photo.jpg, 由 nginx 的 /api 代理转发到后端 /uploads/**。
+--      访问路径为 /api/uploads/avatar/photo.jpg, 由前端的 /api 代理转发到后端 /uploads/**。
 --   2. 班级的开课/结课时间使用 CURDATE() 相对计算,
 --      这样无论什么时候导入, "未开班 / 在读中 / 已结课" 三种状态都能出现。
 --   3. 员工初始密码统一为 123456(与登录逻辑一致, 生产环境应改为加盐哈希)。

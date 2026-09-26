@@ -50,7 +50,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     /**
      * 把本地上传目录映射为静态资源, 使上传的图片可以直接通过 /uploads/** 访问。
-     * 注意: 这里的访问路径不带 /api 前缀, 前缀由 nginx 的 /api/ 代理规则补充。
+     * 注意: 这里的访问路径不带 /api 前缀, /api 前缀由前端的代理(Vite)负责补上。
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

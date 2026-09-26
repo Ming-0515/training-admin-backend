@@ -19,8 +19,8 @@ public class FileStorageProperties {
 
     /**
      * 对外访问前缀。
-     * 前端通过 nginx 访问后端, nginx 把 /api/ 代理到后端根路径,
-     * 所以这里默认带 /api 前缀; 如果前端直连后端, 改成 /uploads 即可。
+     * 前端统一使用 /api 前缀, 开发时由 Vite 代理到后端根路径,
+     * 所以这里默认带 /api 前缀; 如果浏览器直连后端, 改成 /uploads 即可。
      */
     private String accessPrefix = "/api/uploads";
 

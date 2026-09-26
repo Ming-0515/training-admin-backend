@@ -4,7 +4,7 @@
 |---|---|
 | 后端 | Spring Boot 4.0.6 + MyBatis + MySQL 8 |
 | 后端地址 | `http://localhost:8080` |
-| 经 nginx 访问 | `http://localhost:90/api`（nginx 把 `/api/` 反向代理到后端根路径） |
+| 经 Vite dev（前端） | `http://localhost:5173/api`（Vite 把 `/api/` 反向代理到后端根路径） |
 | 鉴权方式 | 请求头 `token`，值为 `POST /login` 返回的 JWT（有效期 12 小时） |
 | 字符编码 | 统一 UTF-8 |
 | 接口总数 | 32 个 |
@@ -792,8 +792,9 @@ curl -X PUT -H "token: $TOKEN" -H "Content-Type: application/json" \
   -d '[6]' http://localhost:8080/employees/9/roles
 ```
 
-> 前端是打包产物、**没有角色管理页面**，该模块只能通过接口使用。
-> 若需图形化界面，需要拿到 Vue 源码工程按 `GET /menus` 的树形结构重做。
+> 前端已有**角色管理页面**（路由 `/role`）：角色增删改 + 用权限树勾选授权，
+> 实现见 `vue-training-admin-backend/src/views/role/index.vue`，权限树直接渲染 `GET /menus` 的树形结构。
+> 下面这些接口在页面上都有对应操作，也可以继续用 curl 调。
 
 ---
 
@@ -831,17 +832,18 @@ curl -X POST -H "token: $TOKEN" \
 - 落地到本地磁盘：`{file.storage.local-dir}/{yyyy}/{MM}/{uuid}.{ext}`
 - 文件名用 UUID，避免重名与路径穿越；落盘前做路径归一化校验
 - 对外通过 `GET /uploads/**` 提供静态访问（**免鉴权**，因为 `<img>` 无法带请求头）
-- 返回的 URL 带 `file.storage.access-prefix` 前缀（默认 `/api/uploads`，适配 nginx 的 `/api` 代理）
+- 返回的 URL 带 `file.storage.access-prefix` 前缀（默认 `/api/uploads`，与前端统一的 `/api` 前缀一致，由 Vite 代理转发）
 
 **上传后如何访问**
 
 | 场景 | URL |
 |---|---|
-| 经 nginx（前端实际使用） | `http://localhost:90/api/uploads/2026/09/xxx.jpg` |
+| 经 Vite dev（前端） | `http://localhost:5173/api/uploads/2026/09/xxx.jpg` |
 | 直连后端 | `http://localhost:8080/uploads/2026/09/xxx.jpg` |
 
-> 注意：返回的 URL 是带 `/api` 前缀的。若前端改为直连后端，需把
-> `file.storage.access-prefix` 改成 `/uploads`。
+> 返回的 URL 带 `file.storage.access-prefix` 前缀（默认 `/api/uploads`）。
+> Vite 会把 `/api` 去掉再转发给后端，所以**保持默认值即可**。
+> 只有当浏览器要直连后端（不走任何代理）时，才需要把它改成 `/uploads`。
 
 ---
 

@@ -2,7 +2,8 @@
 
 部门 / 员工 / 班级 / 学员四个业务模块的后台管理系统，含数据统计报表、RBAC 权限控制与操作日志审计。
 
-前后端分离：前端为 Vue3 + Element Plus + ECharts 的**打包产物**，由 nginx 托管，并把 `/api/` 反向代理到 Spring Boot。
+前后端分离：前端是 Vue3 + Element Plus + ECharts 的**完整源码工程**（`vue-training-admin-backend/`），用 Vite 启动，
+开发时由 Vite 把 `/api/` 反向代理到 Spring Boot，一个 `npm run dev` 就能跑起来。
 
 - 接口文档：[docs/API.md](docs/API.md)（40 个接口的完整说明）
 - 演示账号：`zhangwei / 123456`（超级管理员，含全部权限）
@@ -19,7 +20,7 @@
 - [RBAC 权限控制](#rbac-权限控制)
 - [操作日志](#操作日志)
 - [文件存储](#文件存储)
-- [前端与 nginx](#前端与-nginx)
+- [前端工程与启动](#前端工程与启动)
 - [配置说明](#配置说明)
 - [常见问题](#常见问题)
 - [已知待办](#已知待办)
@@ -37,10 +38,12 @@
 | 学员管理 | 增删改查、学号/身份证号唯一校验、违纪扣分累计、按姓名/学历/班级筛选 |
 | 数据统计 | 员工职位分布、员工性别分布、各班级学员人数、学员学历分布（ECharts） |
 | 操作日志 | 写操作自动留痕（操作人/时间/类名/方法/参数/结果/耗时/IP），超权行为也会记录 |
-| 权限管理 | 角色增删改查、角色授权、员工分配角色（接口形式，前端无页面） |
+| 权限管理 | 角色增删改查、角色授权（权限树勾选）、员工分配角色 |
 | 文件上传 | 头像等图片上传到本地磁盘，带类型/大小校验 |
 
-页面路由：`/index` 首页、`/clazz` 班级、`/stu` 学员、`/dept` 部门、`/emp` 员工、`/report/emp` 员工统计、`/report/stu` 学员统计、`/log` 日志统计。
+页面路由：`/index` 首页、`/clazz` 班级、`/stu` 学员、`/dept` 部门、`/emp` 员工、`/report/emp` 员工统计、`/report/stu` 学员统计、`/log` 日志统计、`/role` 角色管理。
+
+侧边栏菜单**不再是写死的**：登录后按 `GET /menus/mine` 下发的菜单动态渲染，按钮按权限码显隐（`v-permission`）。
 
 ---
 
@@ -51,8 +54,8 @@
 | 后端 | Java 17、Spring Boot 4.0.6、MyBatis、PageHelper、JJWT 0.9.1 |
 | 数据库 | MySQL 8+（库名 `training_admin`），InnoDB + 外键 + CHECK 约束 |
 | 文件存储 | 本地磁盘（`LocalFileStorageService`） |
-| 前端 | Vue3 + Element Plus + ECharts（**仅打包产物**，无源码工程） |
-| 部署 | nginx 1.22（静态托管 + `/api` 反向代理） |
+| 前端 | Vue3 + Vite + Element Plus + ECharts（完整源码工程 `vue-training-admin-backend/`） |
+| 构建 / 部署 | Vite：`npm run dev` 开发、`npm run build` 出 `dist/` |
 | 构建 | Maven |
 
 ---
@@ -66,7 +69,7 @@
 | JDK | 17+ | `java -version` |
 | Maven | 3.6+ | `mvn -v` |
 | MySQL | 8.0.16+（CHECK 约束需要 8.0.16 以上才真正生效） | `mysql --version` |
-| nginx | 任意（仅托管前端时可选） | — |
+| Node.js | 16+（Vite 3 要求） | `node -v` |
 
 ### 2. 初始化数据库
 
@@ -97,16 +100,32 @@ curl -X POST -H "Content-Type: application/json" \
      http://localhost:8080/login
 ```
 
-### 4. 启动前端（nginx）
+### 4. 启动前端（Vite）
 
 ```bash
-cd ../nginx-1.22.0-web
-start nginx          # 启动
-nginx -s reload      # 改配置后重载
-nginx -s stop        # 停止
+cd ../vue-training-admin-backend
+npm install          # 首次
+npm run dev          # 启动开发服务器
 ```
 
-浏览器打开 **http://localhost:90** 。首次访问若页面正常但表格空白，见 [常见问题](#常见问题)。
+浏览器会自动打开 **http://localhost:5173** （没自动打开就手动访问）。Vite 会把 `/api/**` 反向代理到 `http://localhost:8080/**`。
+
+**在 VS Code 里启动（推荐）**：用 VS Code 打开仓库根目录，按 `F5`，选择
+
+| 配置 | 作用 |
+|---|---|
+| 前端：dev 启动 vite | 跑 vite 并自动打开 `http://localhost:5173/`，**平时点这个** |
+| 前端：Chrome 调试（需先启动 dev） | 需要打断点时：先启动上一个，再启动这个 |
+
+配置在 `.vscode/launch.json` 与 `.vscode/tasks.json`；任务面板里还有 `前端: dev`（推荐，直接起 node、不走 shell）、`前端: npm run dev`、`前端: build`、`后端: mvn spring-boot:run`。
+
+> **报 `意外的标记"-Command"` 时**：这是 VS Code 用户级 `settings.json` 里 PowerShell 终端 profile 的
+> `args` 用了 `-Command`，与 VS Code 跑任务时自己拼的 `-Command` 撞车导致的，与本项目无关。
+> 本项目已用 `.vscode/settings.json` 的 `terminal.integrated.automationProfile.windows` 绕开，
+> 并用 `type: "process"` 的 `前端: dev` 任务彻底不经过 shell；彻底修法见
+> [前端工程与启动](#前端工程与启动) 与 `vue-training-admin-backend/README.md`。
+
+> 只启前端不启后端时，页面能打开但登录会失败，前端会提示「接口访问异常, 请确认后端服务已启动」。
 
 ---
 
@@ -153,6 +172,32 @@ training-admin-backend/
     │   ├── logback.xml
     │   └── com/qiming/mapper/*.xml           6 个 Mapper XML
     └── test/java/com/qiming/                 默认的上下文加载测试
+```
+
+前端工程（Vue3 + Vite + Element Plus + ECharts，可独立启动）：
+
+```
+vue-training-admin-backend/
+├── index.html
+├── vite.config.js              别名 @ -> src, dev 端口 5173, /api -> 8080 代理
+├── package.json                npm run dev / build / preview
+├── .vscode/                    launch.json + tasks.json (VS Code 按 F5 启动)
+└── src/
+    ├── main.js                 注册 Element Plus(中文)、全部图标、v-permission 指令
+    ├── utils/
+    │   ├── request.js          axios: 注入 token, 统一处理 401 / 403
+    │   └── permission.js       按钮级权限指令 v-permission
+    ├── api/                    12 个接口模块, 与后端 Controller 一一对应
+    ├── router/index.js         路由表 + 菜单权限守卫
+    └── views/
+        ├── layout/             顶部栏 + 按 /menus/mine 动态渲染的侧边栏
+        ├── login/  index/      登录页 / 首页
+        ├── clazz/  stu/        班级管理 / 学员管理
+        ├── dept/   emp/        部门管理 / 员工管理(含分配角色)
+        ├── role/               角色管理(角色增删改 + 权限树授权)
+        ├── report/emp/         员工信息统计
+        ├── report/stu/         学员信息统计
+        └── log/                日志管理
 ```
 
 ---
@@ -267,7 +312,11 @@ public Result upload(...) { ... }
 
 ### 权限管理怎么用
 
-前端是打包产物、**没有角色管理页面**，该模块通过接口使用：
+前端已有**角色管理页面**（路由 `/role`，侧边栏「权限管理 → 角色管理」）：
+可以增删改角色，并用权限树勾选该角色能访问的菜单、能执行的操作；保存后立即生效，员工无需重新登录。
+给员工分配角色则在「员工管理」页的「分配角色」按钮里。
+
+接口方式（curl）同样可用：
 
 ```bash
 TOKEN=$(curl -s -X POST -H "Content-Type: application/json" \
@@ -324,7 +373,7 @@ curl -X PUT -H "token: $TOKEN" -H "Content-Type: application/json" \
 - 校验：扩展名白名单 + Content-Type 必须 `image/*` + 大小 ≤ 10MB
 - 文件名用 UUID，落盘前做路径归一化校验，防路径穿越
 - 对外通过 `GET /uploads/**` 静态访问，**该路径免鉴权**（`<img>` 标签无法携带请求头）
-- 返回给前端的 URL 带 `access-prefix`（默认 `/api/uploads`），以适配 nginx 的 `/api` 代理
+- 返回给前端的 URL 带 `access-prefix`（默认 `/api/uploads`），与前端统一的 `/api` 前缀保持一致，由 Vite 代理转发到后端
 
 ```bash
 curl -X POST -H "token: $TOKEN" -F "file=@photo.jpg;type=image/jpeg" \
@@ -337,59 +386,29 @@ curl -X POST -H "token: $TOKEN" -F "file=@photo.jpg;type=image/jpeg" \
 
 ---
 
-## 前端与 nginx
+## 前端工程与启动
 
-前端只有**打包产物**（无源码工程），任何界面改动都只能在压缩后的 JS 上做定向替换。
+前端源码在 `vue-training-admin-backend/`（Vue 3 + Vite + Element Plus + ECharts），
+用 `npm run dev` 或 VS Code 的 `F5` 启动。
 
 | 用途 | 地址 |
 |---|---|
-| 页面 | http://localhost:90/ |
-| 接口 | http://localhost:90/api/** → 反向代理到 http://localhost:8080/** |
-| 头像等上传文件 | http://localhost:90/api/uploads/avatar/photo.jpg |
+| 页面 | http://localhost:5173/ |
+| 接口 | http://localhost:5173/api/** → Vite 代理到 http://localhost:8080/** |
+| 头像等上传文件 | http://localhost:5173/api/uploads/avatar/photo.jpg |
 
-> ⚠️ 本机存在**两份** nginx 目录，内容需要保持一致：
-> - `D:\code\MyProject\nginx-1.22.0-web`
-> - `D:\code\Nginx\nginx-1.22.0-web` ← **实际对外服务的是这一份**
->
-> 前端源码缺失时唯一能用的原始产物备份在 `..\original-frontend-backup\`。
+所有请求都以 `/api` 开头，由 `vite.config.js` 里的 `server.proxy` 去掉前缀后转发给后端，
+所以后端 `file.storage.access-prefix` 保持默认的 `/api/uploads` 即可，两边都不需要额外配置。
 
-### 改前端时必须注意的三点
+### 改前端时的注意事项
 
-1. **改完 JS 包一定要改文件名**（`index.<内容哈希>.js`）并同步更新 `index.html` 的引用。
-   浏览器与 nginx 都按 URL 缓存；沿用旧文件名会让用户继续跑旧包，
-   表现为「页面能打开、但表格全是空的」。
-   当前包名 `assets/index.40e5d15f.js`，另外保留 `index.85c77df4.js`、`index.fb0936be.js`、
-   `index.0ee7a389.js` 三个**同名同内容的兼容副本**，防止仍缓存旧 `index.html` 的浏览器
-   请求到旧文件名时被 nginx 的 SPA 回退返回 HTML（会导致白屏）。
-   等所有人强刷过一次后，这三个副本可以删掉。
-2. **改完让用户强制刷新一次**（`Ctrl + F5`）或清浏览器缓存。
-3. **不要在 PowerShell 5.1 里用不带 `-Encoding UTF8` 的 `Get-Content` 读写这些文件**。
-   `index.html` 是无 BOM 的 UTF-8，默认按 GBK 解码再写回会造成中文二次编码（标题变乱码）。
-   读取请用 `[System.IO.File]::ReadAllText($p, [System.Text.Encoding]::UTF8)`。
+改源码（`vue-training-admin-backend/src/`）保存后 Vite 会热更新，通常不用刷新。
+改完跑一次 `npm run build` 确认能打包通过即可。
 
-### nginx 的两个已知坑
-
-**1. `try_files` 会把缺失的静态资源回退成 HTML。**
-`try_files $uri $uri/ /index.html` 是给单页应用做路由回退的，但它对 `/assets/*` 同样生效：
-**请求一个不存在的 JS 会返回 `index.html` 的内容且状态码 200**，浏览器把 HTML 当模块解析就白屏。
-建议给静态资源单独加一段：
-
-```nginx
-location ^~ /assets/ {
-    root html;
-    try_files $uri =404;                                   # 不存在就 404, 不要回退成 HTML
-    expires 30d;                                            # 文件名带内容哈希, 可放心长缓存
-    add_header Cache-Control "public, max-age=2592000, immutable";
-}
-```
-
-**2. `error_page ... /50x.html` 指向的文件原先不存在。**
-后端没启动时 nginx 连不上上游，本该返回 502，却因为错误页文件缺失而报成 **404**，
-非常难定位。已在两份 nginx 的 `html/` 下补上 `50x.html`（页面直接提示"后端未启动"与排查命令）：
-
-```
-后端停止时:  GET /api/employees  →  HTTP 502 + "服务暂时不可用" 页面
-```
+> **不要在 PowerShell 5.1 里用不带 `-Encoding UTF8` 的 `Get-Content` 读写前端文件**。
+> 源码是无 BOM 的 UTF-8，默认按 GBK 解码再写回会造成中文二次编码（标题、校验提示变乱码）。
+> 读取请用 `[System.IO.File]::ReadAllText($p, [System.Text.Encoding]::UTF8)`。
+> （同类坑也会发生在 `.ps1` 脚本上：5.1 读无 BOM 的脚本按 ANSI 解码，脚本里别写非 ASCII 更稳妥。）
 
 ### 前端已有的行为
 
@@ -397,7 +416,10 @@ location ^~ /assets/ {
 - 响应拦截器：`401` 提示"登录失效"并跳登录页；`403` 直接弹出后端返回的 `msg`
 - 路由守卫：未登录跳登录页；已登录时按登录接口下发的 `menus` 判断能否进入某页面，
   无权限则提示并回首页
-- 菜单是**静态**的（写死在压缩包里），受限用户点进无权页面会看到提示而非菜单消失
+- 菜单来自 `GET /menus/mine`，**按权限动态渲染**：受限用户看不到无权菜单，直接输 URL 也会被路由守卫拦下
+- 按钮按权限码显隐（全局指令 `v-permission`），例如没有 `class:create` 权限就看不到「新增班级」
+- **表格「操作」列在没有任何操作权限时整列隐藏**（列级 `v-if="hasPermission([...])"`），
+  避免只读角色（如讲师）看到一列带边框的空白；只有部分权限时列保留、按钮各自显隐
 
 > **前端这些判断不是安全边界**，只是体验优化。绕过前端直接调接口，服务端一样会拦。
 
@@ -438,7 +460,7 @@ file:
 |---|---|
 | `spring.datasource.password` | 明文写在配置里，生产应改为环境变量 |
 | `file.storage.local-dir` | **相对路径以应用工作目录为基准**，换启动目录会导致上传文件"消失" |
-| `file.storage.access-prefix` | 依赖 nginx 的 `/api` 代理；直连后端需改成 `/uploads` |
+| `file.storage.access-prefix` | 上传文件的对外 URL 前缀。默认 `/api/uploads` 配合前端的 `/api` 代理；若浏览器直连后端则改成 `/uploads` |
 | `mybatis...log-impl` | `StdOutImpl` 会把登录 SQL 的参数（含密码）打进控制台，生产应关闭 |
 
 ### 分页上限
@@ -450,27 +472,38 @@ file:
 
 ## 常见问题
 
+### VS Code 里点「运行」报 `表达式或语句中包含意外的标记"-Command"`
+
+这是 VS Code **用户级** `settings.json` 里 PowerShell 终端 profile 的 `args` 写成了
+`["-NoExit", "-Command", "<UTF-8设置>"]`：VS Code 跑任务/脚本时会**再拼一条自己的 `-Command`**，
+两条撞在一起，第二个 `-Command` 就成了非法标记。与本项目代码无关。
+
+本项目已用 `.vscode/settings.json` 的 `terminal.integrated.automationProfile.windows` 绕开，
+并把 `前端: dev` 任务改成 `type: "process"`（直接起 node，不经过任何 shell）。
+彻底修法见 [前端工程与启动](#前端工程与启动)。
+
 ### 页面能打开，但所有表格都是空的
 
 按顺序排查：
 
 1. **后端没启动** —— 最常见。`netstat -ano | findstr :8080` 没有监听就启动后端。
-   此时接口会返回 **502 + "服务暂时不可用"** 页面（页面里直接给了排查命令）。
-   若看到的是 404 而不是 502，说明 nginx 的 `50x.html` 缺失，见上一节。
+   后端不可用时前端会提示「接口访问异常, 请确认后端服务已启动」。
 2. **浏览器缓存了旧前端包** —— 按 `Ctrl + F5` 强制刷新。
 3. **登录态失效** —— 清掉 `localStorage` 里的 `loginUser` 重新登录。
    注意种子数据里的账号是 `zhangwei` / `liuyang` 等，用旧账号会提示"用户名不存在"。
 4. **权限不足** —— 换个有权限的账号，或看接口返回的 `msg` 里缺哪个权限。
+   403 时前端会把后端的 `msg` 直接弹出来，例如「权限不足: 需要【class:create】权限, 请联系管理员!」。
 
 ### 登录后侧边栏菜单没变化
 
-菜单是静态的，不随权限变化（见 [前端与 nginx](#前端已有的行为)）。
-受权限限制的页面点进去会提示"没有访问该页面的权限!"并回到首页。
+菜单现在按 `GET /menus/mine` 动态渲染，会随权限变化。
+若改了角色但菜单没动，强制刷新一次页面（菜单在进入主布局时拉取）。
+直接输入无权页面的 URL 会提示"没有访问该页面的权限!"并回到首页。
 
 ### 头像不显示
 
 - 检查 `uploads/avatar/photo.jpg` 是否存在（种子数据依赖它）。
-- 检查 `access-prefix` 与实际访问方式是否匹配（经 nginx 用 `/api/uploads`，直连后端用 `/uploads`）。
+- 检查 `access-prefix` 与实际访问方式是否匹配（默认 `/api/uploads`，浏览器直连后端则是 `/uploads`）。
 - 该接口免鉴权，若返回 401，说明 `/uploads/**` 没被加入拦截器白名单。
 
 ### 新增员工后无法登录
@@ -507,12 +540,10 @@ file:
 - [ ] JWT 密钥硬编码在 `JwtUtils`，应移到配置或环境变量；令牌无刷新机制、无服务端吊销
 - [ ] `mybatis log-impl: StdOutImpl` 会打印登录 SQL 参数（含密码），生产必须关闭
 - [ ] 操作日志中的 `id_card`、`phone` 等字段仍是明文入库，建议加字段级掩码
-- [ ] 生产环境应启用 HTTPS，并给 nginx 加 CSP / X-Frame-Options 等响应头
+- [ ] 生产环境应启用 HTTPS，并加上 CSP / X-Frame-Options 等安全响应头
 
 ### 功能
 
-- [ ] 前端缺少**角色管理页面**（需拿到 Vue 源码工程）
-- [ ] 前端菜单静态，无法按权限动态渲染（接口 `/menus/mine` 已就绪）
 - [ ] 学员/员工缺少 Excel 批量导入导出
 - [ ] 班级状态无法按状态筛选（状态由日期实时计算，未入库）
 - [ ] 学员违纪只累计次数与总分，缺少明细表，无法查看/撤销历史违纪
@@ -527,4 +558,3 @@ file:
 - [ ] 分页参数、删除接口参数风格不统一（详见 [docs/API.md 13.4](docs/API.md#134-接口设计上的已知不一致)）
 - [ ] 权限校验每次请求查 2 次库，可按员工ID加缓存、在角色变更时失效
 - [ ] 无多环境配置（dev/prod profile），数据库密码明文写在版本库中
-- [ ] 前端仅有打包产物、无源码工程，维护成本高

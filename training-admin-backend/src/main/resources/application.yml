@@ -31,8 +31,8 @@ file:
   storage:
     # 存储根目录, 相对路径以应用工作目录为基准
     local-dir: ./uploads
-    # 对外访问前缀: 前端经 nginx 访问, nginx 把 /api/ 代理到后端根路径;
-    # 若前端直连后端端口, 改成 /uploads
+    # 对外访问前缀: 前端统一使用 /api 前缀, 开发时由 Vite 代理到后端根路径;
+    # 若浏览器直连后端端口, 改成 /uploads
     access-prefix: /api/uploads
     # 单个文件大小上限(字节), 10MB
     max-size: 10485760

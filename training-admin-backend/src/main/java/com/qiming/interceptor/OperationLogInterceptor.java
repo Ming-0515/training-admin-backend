@@ -210,7 +210,7 @@ public class OperationLogInterceptor implements HandlerInterceptor {
     }
 
     /**
-     * 操作IP。注意: 目前请求经 nginx 代理, 未转发真实IP时这里拿到的是 127.0.0.1
+     * 操作IP。优先取 X-Forwarded-For; 经代理访问且未转发真实IP时, 这里拿到的是 127.0.0.1
      */
     private String resolveIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");

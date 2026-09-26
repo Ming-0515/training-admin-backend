@@ -5,6 +5,13 @@
 *.iws
 out/
 
+# ===== VS Code =====
+# 忽略个性化配置, 但保留开箱可用的启动/任务配置
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
 # ===== Maven =====
 target/
 pom.xml.tag
@@ -37,6 +44,14 @@ replay_pid*
 logs/
 *.log
 
+# ===== 上传文件目录 =====
+# uploads/ 既是种子数据目录, 又是运行时上传目录:
+# 只跟踪种子那张头像, 运行时上传的文件不进版本库, 否则 git status 会越用越脏
+training-admin-backend/uploads/*
+!training-admin-backend/uploads/avatar/
+training-admin-backend/uploads/avatar/*
+!training-admin-backend/uploads/avatar/photo.jpg
+
 # ===== 操作系统 =====
 .DS_Store
 Thumbs.db
@@ -50,3 +65,6 @@ application-local.properties
 *.tmp
 *.bak
 *.swp
+
+# ===== 本地 npm 缓存(在受限沙箱里安装依赖时使用) =====
+.npm-cache/

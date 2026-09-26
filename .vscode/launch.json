@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "前端：dev 启动 vite",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/vue-training-admin-backend/node_modules/vite/bin/vite.js",
+      "cwd": "${workspaceFolder}/vue-training-admin-backend",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "前端：Chrome 调试（需先启动 dev）",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/vue-training-admin-backend/src",
+      "sourceMaps": true
+    }
+  ]
+}
