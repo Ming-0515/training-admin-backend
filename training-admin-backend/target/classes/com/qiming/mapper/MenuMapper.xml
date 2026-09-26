@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qiming.mapper.MenuMapper">
+
+    <!-- 全部菜单/权限 -->
+    <select id="listAll" resultType="com.qiming.pojo.Menu">
+        select id, parent_id, name, type, permission_code, path, sort, create_time, update_time
+        from menu
+        order by parent_id, sort, id
+    </select>
+
+    <!-- 某个员工拥有的全部权限标识(经 员工->角色->菜单 三级关联) -->
+    <select id="listPermissionCodesByEmployeeId" resultType="java.lang.String">
+        select distinct m.permission_code
+        from menu m
+                 join role_menu rm on m.id = rm.menu_id
+                 join employee_role er on rm.role_id = er.role_id
+        where er.employee_id = #{employeeId}
+          and m.permission_code is not null
+        order by m.permission_code
+    </select>
+
+    <!-- 某个员工可见的菜单(只取 type=1 的菜单, 用于前端路由/动态菜单) -->
+    <select id="listMenusByEmployeeId" resultType="com.qiming.pojo.Menu">
+        select distinct m.id, m.parent_id, m.name, m.type, m.permission_code, m.path, m.sort
+        from menu m
+                 join role_menu rm on m.id = rm.menu_id
+                 join employee_role er on rm.role_id = er.role_id
+        where er.employee_id = #{employeeId}
+          and m.type = 1
+        order by m.parent_id, m.sort, m.id
+    </select>
+
+</mapper>

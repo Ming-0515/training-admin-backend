@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qiming.mapper.StudentMapper">
+
+    <!-- 添加学员 -->
+    <insert id="addStudent">
+        insert into student (name, student_no, degree, gender, phone, id_card, is_college, address, graduation_date, class_id, violation_count, violation_score, create_time, update_time)
+        values (#{name}, #{studentNo}, #{degree}, #{gender}, #{phone}, #{idCard}, #{isCollege}, #{address}, #{graduationDate}, #{classId}, #{violationCount}, #{violationScore}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!-- 更新学员信息 -->
+    <update id="updateStudent">
+        update student
+        set name = #{name}, student_no = #{studentNo}, degree = #{degree}, gender = #{gender}, phone = #{phone}, id_card = #{idCard}, is_college = #{isCollege}, address = #{address}, graduation_date = #{graduationDate}, class_id = #{classId}, violation_count = #{violationCount}, violation_score = #{violationScore}, update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
+    <!-- 删除学员 -->
+    <delete id="deleteStudentById">
+        delete from student where id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+    </delete>
+
+    <!-- 查询学员分页数据 -->
+    <select id="page" resultType="com.qiming.pojo.Student">
+        select student.*, course_class.name courseClassName
+        from student left join course_class on student.class_id = course_class.id
+        <where>
+            <if test="name != null">
+                student.name like concat('%', #{name}, '%')
+            </if>
+
+            <if test="degree != null">
+                and student.degree = #{degree}
+            </if>
+
+            <if test="classId != null">
+                and student.class_id = #{classId}
+            </if>
+        </where>
+        order by student.update_time desc, student.id desc
+    </select>
+
+    <!-- 根据id查询学员详情 -->
+    <select id="getStudentById" resultType="com.qiming.pojo.Student">
+        select * from student where id = #{id}
+    </select>
+
+</mapper>

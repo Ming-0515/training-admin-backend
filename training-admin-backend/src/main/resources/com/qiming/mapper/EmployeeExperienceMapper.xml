@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qiming.mapper.EmployeeExperienceMapper">
+
+    <!-- 批量添加员工工作经历 -->
+    <insert id="addBatch">
+        insert into employee_experience (employee_id, begin_date, end_date, company, position) values
+        <foreach collection="experienceList" item="experience" separator=",">
+            (#{experience.employeeId}, #{experience.beginDate}, #{experience.endDate}, #{experience.company}, #{experience.position})
+        </foreach>
+    </insert>
+
+    <!-- 批量删除员工工作经历 -->
+    <delete id="deleteBatch">
+        delete from employee_experience where employee_id in
+         <foreach collection="employeeIds" item="employeeId" separator="," open="(" close=")">
+            #{employeeId}
+         </foreach>
+    </delete>
+
+</mapper>
