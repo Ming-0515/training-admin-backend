@@ -19,8 +19,6 @@ public interface EmployeeMapper {
 
     /**
      * 添加员工。
-     * 注意: 自增主键回填写在 EmployeeMapper.xml 的 {@code <insert useGeneratedKeys="true" keyProperty="id">} 上。
-     * 语句由 XML 定义时, 接口方法上的 @Options 不会生效, 只写注解会导致拿不到自增主键。
      */
     void addEmployee(Employee employee);
 
@@ -50,9 +48,8 @@ public interface EmployeeMapper {
     List<Map> getEmployeeGenderData();
 
     /**
-     * 查询所有员工(用于班级的班主任下拉框)。
-     * 下拉框只需要 id + name, 刻意不查 salary / phone 等字段,
-     * 避免把整个员工表暴露给只需要"选一个人"的场景。
+     * 查询所有员工(用于班级的班主任下拉框)
+     * 下拉框只需要 id + name
      */
     @Select("select id, name from employee")
     List<Employee> findAll();

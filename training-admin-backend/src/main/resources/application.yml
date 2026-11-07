@@ -3,16 +3,20 @@ spring:
     name: training-admin
   # 数据库配置
   datasource:
-    url: jdbc:mysql://localhost:3306/training_admin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/training_admin?serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: 1234
   servlet:
     multipart:
-      # 单个文件最大大小(与前端"只能上传10M以内图片"的校验保持一致)
+      # 单个文件最大大小
       max-file-size: 10MB
       # 上传请求最大总大小
       max-request-size: 20MB
+
+  # 去掉spring横幅
+  main:
+    banner-mode: off
 
 # mybatis配置
 mybatis:

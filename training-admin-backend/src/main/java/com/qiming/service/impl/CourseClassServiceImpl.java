@@ -30,13 +30,13 @@ public class CourseClassServiceImpl implements CourseClassService {
     @Override
     public PageResult<CourseClass> page(CourseClassQueryParam courseClassQueryParam) {
         //设置分页参数
-        PageHelper.startPage(courseClassQueryParam.getPage(),courseClassQueryParam.getPageSize());
+        PageHelper.startPage(courseClassQueryParam.getPage(), courseClassQueryParam.getPageSize());
 
         // 执行查询
         Page<CourseClass> courseClassNames = courseClassMapper.page(courseClassQueryParam);
 
         // 设置班级状态
-        courseClassNames.forEach(courseClass -> {
+        for (CourseClass courseClass : courseClassNames) {
             if (LocalDate.now().isAfter(courseClass.getEndDate())) {
                 courseClass.setStatus("已结课");
             } else if (LocalDate.now().isBefore(courseClass.getBeginDate())) {
@@ -44,7 +44,7 @@ public class CourseClassServiceImpl implements CourseClassService {
             } else {
                 courseClass.setStatus("在读中");
             }
-        });
+        }
 
         // 封装结果
         return new PageResult<CourseClass>(courseClassNames.getTotal(), courseClassNames.getResult());
@@ -106,9 +106,7 @@ public class CourseClassServiceImpl implements CourseClassService {
     }
 
     /**
-     * 班级关键字段校验。
-     * 原来后端完全没有校验, 绕过前端就能写入"结课时间早于开课时间"的班级,
-     * 而班级状态是按日期算出来的, 这种数据会让状态永远是"已结课"。
+     * 班级关键字段校验
      */
     private void checkCourseClass(CourseClass courseClass) {
         if (courseClass == null) {
@@ -132,7 +130,7 @@ public class CourseClassServiceImpl implements CourseClassService {
         if (courseClass.getSubject() == null) {
             throw new IllegalArgumentException("请选择学科!");
         }
-        // courseClass.head_teacher_id 没有外键约束, 这里校验班主任是否存在, 避免出现悬空的班主任引用
+        // courseClass.head_teacher_id 没有外键约束, 这里校验班主任是否存在
         if (courseClass.getHeadTeacherId() != null && employeeMapper.getById(courseClass.getHeadTeacherId()) == null) {
             throw new IllegalArgumentException("所选班主任不存在, 请重新选择!");
         }

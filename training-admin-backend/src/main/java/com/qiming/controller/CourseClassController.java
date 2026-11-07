@@ -24,8 +24,8 @@ public class CourseClassController {
      */
     @GetMapping
     @RequiresPermission("class:list")
-    public Result page(CourseClassQueryParam courseClassQueryParam){
-        log.info("分页查询班级列表:{}",courseClassQueryParam);
+    public Result page(CourseClassQueryParam courseClassQueryParam) {
+        log.info("分页查询班级列表:{}", courseClassQueryParam);
         PageResult<CourseClass> pageResult = courseClassService.page(courseClassQueryParam);
         return Result.success(pageResult);
     }
@@ -35,8 +35,8 @@ public class CourseClassController {
      */
     @PostMapping
     @RequiresPermission("class:create")
-    public Result addCourseClass(@RequestBody CourseClass courseClass){
-        log.info("增加班级:{}",courseClass);
+    public Result addCourseClass(@RequestBody CourseClass courseClass) {
+        log.info("增加班级:{}", courseClass);
         courseClassService.addCourseClass(courseClass);
         return Result.success();
     }
@@ -46,8 +46,8 @@ public class CourseClassController {
      */
     @GetMapping("/{id}")
     @RequiresPermission("class:list")
-    public Result getCourseClassById(@PathVariable Integer id){
-        log.info("根据ID查询班级:{}",id);
+    public Result getCourseClassById(@PathVariable Integer id) {
+        log.info("根据ID查询班级:{}", id);
         CourseClass courseClass = courseClassService.getCourseClassById(id);
         return Result.success(courseClass);
     }
@@ -57,8 +57,8 @@ public class CourseClassController {
      */
     @PutMapping
     @RequiresPermission("class:update")
-    public Result updateCourseClass(@RequestBody CourseClass courseClass){
-        log.info("更新班级:{}",courseClass);
+    public Result updateCourseClass(@RequestBody CourseClass courseClass) {
+        log.info("更新班级:{}", courseClass);
         courseClassService.updateCourseClass(courseClass);
         return Result.success();
     }
@@ -68,8 +68,8 @@ public class CourseClassController {
      */
     @DeleteMapping("/{id}")
     @RequiresPermission("class:delete")
-    public Result deleteCourseClass(@PathVariable Integer id){
-        log.info("删除班级:{}",id);
+    public Result deleteCourseClass(@PathVariable Integer id) {
+        log.info("删除班级:{}", id);
         courseClassService.deleteCourseClass(id);
         return Result.success();
     }

@@ -24,19 +24,16 @@
 
     <!-- 分页查询班级 -->
     <select id="page" resultType="com.qiming.pojo.CourseClass">
-        select course_class.*, employee.name as headTeacherName from course_class left join employee on course_class.head_teacher_id = employee.id
+        select course_class.*, employee.name headTeacherName from course_class left join employee on course_class.head_teacher_id = employee.id
         <where>
             <if test="name != null">
                 course_class.name like concat('%', #{name}, '%')
             </if>
 
-            <!-- 前端筛选条件是"结课时间", end_date 为 DATE 类型, 闭区间 between 即可精确命中当天 -->
             <if test="begin != null and end != null">
                 and course_class.end_date between #{begin} and #{end}
             </if>
         </where>
-        <!-- 原来这里没有 order by: MySQL 不保证返回顺序, 翻页时会出现重复行和漏行。
-             update_time 可能重复, 所以再补一个 id 作为兜底, 保证排序是确定的。 -->
         order by course_class.update_time desc, course_class.id desc
     </select>
 

@@ -10,9 +10,7 @@ import java.time.LocalDate;
 public class CourseClassQueryParam {
 
     String name;                            //班级名称(模糊匹配)
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate begin;                        //结课时间(区间开始)
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate end;                          //结课时间(区间结束, 含当天)
     Integer page = 1;                       //当前页码
     Integer pageSize = 10;                  //每页显示条数

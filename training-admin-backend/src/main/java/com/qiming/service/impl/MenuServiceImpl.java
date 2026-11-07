@@ -30,24 +30,29 @@ public class MenuServiceImpl implements MenuService {
      */
     @Override
     public List<Menu> listAllTree() {
+        // 所有菜单
         List<Menu> all = menuMapper.listAll();
+        // 按照id建立map，便于后续查找
         Map<Integer, Menu> byId = new LinkedHashMap<>();
         for (Menu menu : all) {
             byId.put(menu.getId(), menu);
         }
+        // 用于保存根节点
         List<Menu> roots = new ArrayList<>();
         for (Menu menu : all) {
             Integer parentId = menu.getParentId();
+            // 为根节点
             if (parentId == null || parentId == 0) {
                 roots.add(menu);
                 continue;
             }
             Menu parent = byId.get(parentId);
+            // 父节点不存在(脏数据)
             if (parent == null) {
-                // 父节点不存在(脏数据)时按顶级处理, 避免整个菜单树丢失
                 roots.add(menu);
                 continue;
             }
+            // 将子节点挂到父节点上
             if (parent.getChildren() == null) {
                 parent.setChildren(new ArrayList<>());
             }
@@ -58,8 +63,10 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private void sortRecursively(List<Menu> menus) {
+        // 对树进行排序
         menus.sort(Comparator.comparing(Menu::getSort, Comparator.nullsLast(Integer::compareTo))
                 .thenComparing(Menu::getId));
+        // 对每棵树的结点进行排序，递归实现
         for (Menu menu : menus) {
             if (menu.getChildren() != null) {
                 sortRecursively(menu.getChildren());

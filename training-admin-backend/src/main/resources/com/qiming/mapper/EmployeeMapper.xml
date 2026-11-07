@@ -6,17 +6,13 @@
 <mapper namespace="com.qiming.mapper.EmployeeMapper">
 
     <!-- 添加员工 -->
-    <!-- useGeneratedKeys 必须写在 XML 上: 语句由 XML 定义时, 接口方法上的 @Options 不会生效,
-         不写的话 employee.id 拿不到自增主键, 后面插入工作经历时 employee_id 会是 NULL。 -->
     <insert id="addEmployee" useGeneratedKeys="true" keyProperty="id">
         insert into employee(username, password, name, gender, phone, position, salary, avatar, entry_date, department_id, create_time, update_time) values
         (#{username}, #{password}, #{name}, #{gender}, #{phone}, #{position}, #{salary}, #{avatar}, #{entryDate}, #{departmentId}, #{createTime}, #{updateTime})
     </insert>
 
     <!-- 更新员工基本信息 -->
-    <!-- 注意: 这里刻意不更新 password。密码属于敏感字段, 且前端编辑表单不再回传密码,
-         如果在此写 password = #{password}, 未传密码的请求会把密码直接改成 NULL。
-         后续如需修改密码, 请新增独立的"修改密码"接口并做原密码校验。 -->
+    <!-- 注意: 这里不更新 password。 -->
     <update id="updateEmployee">
         update employee
         set username = #{username}, name = #{name}, gender = #{gender}, phone = #{phone}, position = #{position}, salary = #{salary}, avatar = #{avatar}, entry_date = #{entryDate}, department_id = #{departmentId}, update_time = #{updateTime}

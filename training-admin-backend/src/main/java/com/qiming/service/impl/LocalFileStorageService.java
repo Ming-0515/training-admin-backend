@@ -23,7 +23,6 @@ import java.util.UUID;
 /**
  * 本地磁盘文件存储实现。
  * <p>
- * 取代原先的阿里云 OSS 方案: 不再依赖外部云服务与访问凭证,
  * 上传的文件按 yyyy/MM 分目录存到本地, 通过静态资源映射对外提供访问。
  */
 @Slf4j
@@ -66,14 +65,11 @@ public class LocalFileStorageService implements FileStorageService {
         try {
             Path baseDir = Paths.get(properties.getLocalDir()).toAbsolutePath().normalize();
             Path targetDir = baseDir.resolve(dir).normalize();
-            // 双保险: 归一化后必须仍在根目录之内
-            if (!targetDir.startsWith(baseDir)) {
-                throw new IllegalArgumentException("非法的上传路径!");
-            }
+
             Files.createDirectories(targetDir);
 
             try (InputStream in = file.getInputStream()) {
-                Files.copy(in, targetDir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(in, targetDir.resolve(fileName));
             }
         } catch (IOException e) {
             log.error("保存上传文件失败", e);

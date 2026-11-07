@@ -6,26 +6,12 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>4.0.6</version>
-        <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>com.qiming</groupId>
     <artifactId>training-admin</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>training-admin</name>
-    <description>培训机构后台管理系统</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
+
     <properties>
         <java.version>17</java.version>
     </properties>
@@ -82,9 +68,6 @@
             <artifactId>pagehelper-spring-boot-starter</artifactId>
             <version>2.1.0</version>
         </dependency>
-
-        <!-- 引入aliyun-sdk-oss依赖 -->
-        <!-- 已移除: 头像等文件改为本地磁盘存储(见 LocalFileStorageService), 不再依赖阿里云 OSS -->
 
         <!-- JWT依赖-->
         <dependency>

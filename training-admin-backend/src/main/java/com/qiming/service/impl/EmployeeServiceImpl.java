@@ -32,7 +32,9 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     private static final String DEFAULT_PASSWORD = "123456";
 
-    /** 手机号格式 */
+    /**
+     * 手机号格式
+     */
     private static final String PHONE_REGEX = "^1\\d{10}$";
 
     @Autowired
@@ -49,13 +51,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public PageResult<Employee> page(EmployeeQueryParam employeeQueryParam) {
         // 设置分页参数
-        PageHelper.startPage(employeeQueryParam.getPage(),employeeQueryParam.getPageSize());
+        PageHelper.startPage(employeeQueryParam.getPage(), employeeQueryParam.getPageSize());
 
         // 执行查询
         Page<Employee> employeeList = employeeMapper.list(employeeQueryParam);
 
         // 封装分页结果
-        return new PageResult<Employee>(employeeList.getTotal(),employeeList.getResult());
+        return new PageResult<Employee>(employeeList.getTotal(), employeeList.getResult());
 
     }
 
@@ -76,7 +78,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         // 保存员工工作经历
         List<EmployeeExperience> experienceList = employee.getExperienceList();
-        if(!CollectionUtils.isEmpty(experienceList)){
+        if (!CollectionUtils.isEmpty(experienceList)) {
             // 设置员工ID
             experienceList.forEach(expr -> {
                 expr.setEmployeeId(employee.getId());
@@ -129,7 +131,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeExperienceMapper.deleteBatch(List.of(employee.getId()));
         // 更新员工工作经历
         List<EmployeeExperience> experiences = employee.getExperienceList();
-        if(!CollectionUtils.isEmpty(experiences)){
+        if (!CollectionUtils.isEmpty(experiences)) {
             experiences.forEach(expr -> {
                 expr.setEmployeeId(employee.getId());
             });
@@ -155,22 +157,18 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         // 查询员工基本信息
         Employee loginEmployee = employeeMapper.getByUsername(employee.getUsername());
-        if(loginEmployee == null){
+        if (loginEmployee == null) {
             throw new IllegalArgumentException("用户名不存在!");
         }
         // 校验密码
-        // 注意: 这里必须做空值判断。历史脏数据里存在 password 为 NULL 的员工,
-        // 直接 loginEmployee.getPassword().equals(...) 会抛 NullPointerException,
-        // 前端只会看到"程序出错了!", 完全定位不到原因。
-        if(!StringUtils.hasText(loginEmployee.getPassword()) || !loginEmployee.getPassword().equals(employee.getPassword())){
+        if (!StringUtils.hasText(loginEmployee.getPassword()) || !loginEmployee.getPassword().equals(employee.getPassword())) {
             throw new IllegalArgumentException("密码错误!");
         }
         // 生成令牌
-        // name 也放进 claims: 操作日志需要记录"操作人姓名", 避免每次写日志都再查一次库
-        Map<String,Object> claims = new HashMap<>();
-        claims.put("id",loginEmployee.getId());
-        claims.put("username",loginEmployee.getUsername());
-        claims.put("name",loginEmployee.getName());
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("id", loginEmployee.getId());
+        claims.put("username", loginEmployee.getUsername());
+        claims.put("name", loginEmployee.getName());
         String jwt = JwtUtils.generateToken(claims);
 
         // 封装登录信息, 并下发 RBAC 相关数据:
@@ -181,18 +179,21 @@ public class EmployeeServiceImpl implements EmployeeService {
         loginInfo.setUsername(loginEmployee.getUsername());
         loginInfo.setName(loginEmployee.getName());
         loginInfo.setToken(jwt);
-        loginInfo.setRoles(roleService.listRolesByEmployeeId(loginEmployee.getId())
-                .stream()
-                .map(Role::getCode)
-                .toList());
+
+        List<Role> roleList = roleService.listRolesByEmployeeId(loginEmployee.getId());
+        List<String> roleCodes = new ArrayList<>();
+        for (Role role : roleList) {
+            roleCodes.add(role.getCode());
+        }
+        loginInfo.setRoles(roleCodes);
+
         loginInfo.setPermissions(new ArrayList<>(menuService.listPermissionCodes(loginEmployee.getId())));
         loginInfo.setMenus(menuService.listMenusByEmployeeId(loginEmployee.getId()));
         return loginInfo;
     }
 
     /**
-     * 员工关键字段校验。
-     * 原来后端完全没有校验, 校验只写在前端表单里, 绕过前端就能写入脏数据(手机号格式乱、部门ID不存在等)。
+     * 员工关键字段校验
      */
     private void checkEmployee(Employee employee) {
         if (employee == null) {

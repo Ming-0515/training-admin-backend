@@ -26,7 +26,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequiresPermission {
 
-    /** 需要的权限标识, 满足任意一个即可 */
+    /**
+     * 需要的权限标识, 满足任意一个即可
+     */
     String[] value();
 
 }
